@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JavaScript Quiz App</title>
+<style>
+body {
+  font-family: 'Arial', sans-serif;
+  background: #f0f4f8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 500px;
+  padding: 30px;
+  background-color: lightskyblue;
+  box-shadow: 0 4px 12px rgba(45, 44, 44, 0.2);
+  border-radius: 10px;
+  text-align: center;
+ 
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: indigo;
+}
+
+.question {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #444444;
+}
+
+.options {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.option {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #555;
+}
+
+.option input {
+  margin-right: 8px;
+}
+
+.button {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: #4a30f0;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 10px 5px 0 5px;
+}
+.result {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #333;
+}
+
+.hide {
+  display: none;
+}
+
+/* Retry and Show Answer Buttons */
+#retry {
+  background-color: #f0ad4e;
+}
+
+#retry:hover {
+  background-color: #ec971f;
+}
+
+#showAnswer {
+  background-color: #d9534f;
+}
+
+#showAnswer:hover {
+  background-color: #c9302c;
+}
+.message {
+    color: red;
+}
+</style>
+</head>
+<body>
+    <h1> Quiz App</h1>
+  
+    <div class="container">
+
+    <div id="quiz"></div>
+    <div id="result" class="result"></div>
+    <div id="message" class="message hide">Please choose an option before submitting!</div>
+    <button id="submit" class="button">Submit</button>
+    <button id="retry" class="button hide">Retry</button>
+    <button id="showAnswer" class="button hide">Show Answer</button>
+  </div>
+  <script>
+    const quizData = [
+    
+    {
+      question: 'Which company developed JavaScript?',
+      options: ['Microsoft', 'Netscape', 'Oracle', 'IBM'],
+      answer: 'Netscape',
+    },
+    
+    {
+      question: 'Which method is used to find the length of a string in JavaScript?',
+      options: ['length()', 'size()', 'len()', '.length'],
+      answer: '.length',
+    },
+    
+    {
+      question: 'What is the output of the following code: console.log(typeof NaN);',
+      options: ['number', 'undefined', 'object', 'string'],
+      answer: 'number',
+    },
+    {
+        question: 'What does "Object.freeze()" do in JavaScript?',
+        options: [
+            'Prevents modification of existing properties and values in an object.',
+            'Allows modification of property values but not property attributes.',
+            'Freezes only the object\'s prototype.',
+            'Creates a deep copy of the object.',
+            ],
+            answer: 'Prevents modification of existing properties and values in an object.',
+    },
+    {
+        question: 'What will be the output of the following code? console.log([] == ![]);',
+        options: ['true', 'false', 'undefined', 'SyntaxError'],
+        answer: 'true',
+    },
+    {
+      question: 'What will the following code output?\n\nconsole.log(!!"false");',
+      options: ['true', 'false', 'undefined', 'TypeError'],
+      answer: 'true',
+    },
+    
+    ];
+
+    const quizContainer = document.getElementById('quiz');
+    const resultContainer = document.getElementById('result');
+    const submitButton = document.getElementById('submit');
+    const retryButton = document.getElementById('retry');
+    const showAnswerButton = document.getElementById('showAnswer');
+    const messageContainer = document.getElementById('message');
+
+    let currentQuestion = 0;
+    let score = 0;
+    let incorrectAnswers = [];
+
+    function displayQuestion() {
+      const questionData = quizData[currentQuestion];
+      const questionElement = document.createElement('div');
+      questionElement.className = 'question';
+      questionElement.innerHTML = `${currentQuestion + 1}. ${questionData.question}`;
+
+      const optionsElement = document.createElement('div');
+      optionsElement.className = 'options';
+
+      const originalOptions = questionData.options;
+
+      for (let i = 0; i < originalOptions.length; i++) {
+        const option = document.createElement('label');
+        option.className = 'option';
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'quiz';
+        radio.value = originalOptions[i];
+
+        const optionText = document.createTextNode(originalOptions[i]);
+
+        option.appendChild(radio);
+        option.appendChild(optionText);
+        optionsElement.appendChild(option);
+      }
+
+      quizContainer.innerHTML = '';
+      quizContainer.appendChild(questionElement);
+      quizContainer.appendChild(optionsElement);
+      messageContainer.classList.add('hide');
+    }
+
+    function checkAnswer() {
+      const selectedOption = document.querySelector('input[name="quiz"]:checked');
+      if (selectedOption) {
+        const answer = selectedOption.value;
+        if (answer === quizData[currentQuestion].answer) {
+          score++;
+        } else {
+          incorrectAnswers.push({
+            question: quizData[currentQuestion].question,
+            incorrectAnswer: answer,
+            correctAnswer: quizData[currentQuestion].answer,
+          });
+        }
+        currentQuestion++;
+        selectedOption.checked = false;
+        if (currentQuestion < quizData.length) {
+          displayQuestion();
+        } else {
+          displayResult();
+        }
+        
+      }
+      else {
+        messageContainer.classList.remove('hide');
+      }
+    }
+
+    function displayResult() {
+      quizContainer.style.display = 'none';
+      submitButton.style.display = 'none';
+      retryButton.style.display = 'inline-block';
+      showAnswerButton.style.display = 'inline-block';
+      resultContainer.innerHTML = `You scored ${score} out of ${quizData.length}!`;
+    }
+    
+
+    function retryQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      incorrectAnswers = [];
+      quizContainer.style.display = 'block';
+      submitButton.style.display = 'inline-block';
+      retryButton.style.display = 'none';
+      showAnswerButton.style.display = 'none';
+      resultContainer.innerHTML = '';
+      displayQuestion();
+    }
+    
+    function showAnswer() {
+      quizContainer.style.display = 'none';
+      submitButton.style.display = 'none';
+      retryButton.style.display = 'inline-block';
+      showAnswerButton.style.display = 'none';
+      let incorrectAnswersHtml = '';
+      for (let i = 0; i < incorrectAnswers.length; i++) {
+        incorrectAnswersHtml += `
+          <p>
+         ${incorrectAnswers[i].question}<br>
+        Your Answer: <span style="color: red;">${incorrectAnswers[i].incorrectAnswer}</span><br>
+        Correct Answer:<span style="color: green;">${incorrectAnswers[i].correctAnswer}</span>
+          </p>
+        `;
+      }
+      resultContainer.innerHTML = `
+        <p style="color:darkgreen">You scored ${score} out of ${quizData.length}!</p>
+        <p style="color:darkred">Incorrect Answers:</p>
+        ${incorrectAnswersHtml}
+      `;
+    }
+
+    submitButton.addEventListener('click', checkAnswer);
+    retryButton.addEventListener('click', retryQuiz);
+    showAnswerButton.addEventListener('click', showAnswer);
+
+    displayQuestion();
+
+  </script>
+</body>
+</html>
